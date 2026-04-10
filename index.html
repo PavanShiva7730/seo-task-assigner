@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SEO Task Assigner — CM JFM AMJ 2026</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #F7F6F3;
+      --surface: #FFFFFF;
+      --border: #E4E2DC;
+      --border-strong: #C8C5BC;
+      --text: #1A1917;
+      --text-2: #6B6860;
+      --text-3: #9E9B95;
+      --green: #1D9E75;
+      --green-light: #E1F5EE;
+      --green-dark: #085041;
+      --blue-light: #E6F1FB;
+      --blue-dark: #0C447C;
+      --purple-light: #EEEDFE;
+      --purple-dark: #3C3489;
+      --amber-light: #FAEEDA;
+      --amber-dark: #633806;
+      --red: #E24B4A;
+      --radius: 10px;
+      --radius-sm: 6px;
+    }
+
+    body {
+      font-family: 'DM Sans', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    /* ── Layout ── */
+    .topbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      height: 56px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .topbar-logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .logo-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: var(--green);
+    }
+    .topbar-title { font-weight: 600; font-size: 15px; }
+    .topbar-sub { font-size: 12px; color: var(--text-3); }
+    .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+    .avail-pill {
+      display: flex; align-items: center; gap: 6px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      background: var(--green-light);
+      font-size: 12px;
+      color: var(--green-dark);
+      font-weight: 500;
+    }
+    .avail-pill span { font-size: 16px; font-weight: 600; }
+
+    .main { max-width: 960px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+    /* ── Tabs ── */
+    .tabs {
+      display: flex; gap: 4px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 4px;
+      margin-bottom: 1.5rem;
+      width: fit-content;
+    }
+    .tab {
+      padding: 7px 18px;
+      border-radius: 7px;
+      border: none;
+      background: transparent;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-2);
+      cursor: pointer;
+      transition: all 0.15s;
+      position: relative;
+    }
+    .tab:hover:not(.active) { color: var(--text); background: var(--bg); }
+    .tab.active { background: var(--text); color: #fff; }
+    .tab .badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      background: var(--green);
+      color: #fff;
+      font-size: 10px;
+      margin-left: 5px;
+    }
+
+    .panel { display: none; animation: fadeIn 0.15s ease; }
+    .panel.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* ── Cards ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+    }
+    .card-title {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      color: var(--text-3);
+      text-transform: uppercase;
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* ── Writer chips ── */
+    .team-section { margin-bottom: 1.5rem; }
+    .team-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-3);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .writer-grid {
+      display: flex; flex-wrap: wrap; gap: 8px;
+    }
+    .writer-chip {
+      display: flex; align-items: center; gap: 7px;
+      padding: 7px 13px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      background: var(--bg);
+      font-size: 13px;
+      font-family: 'DM Sans', sans-serif;
+      color: var(--text-2);
+      transition: all 0.15s;
+      user-select: none;
+    }
+    .writer-chip:hover { border-color: var(--border-strong); color: var(--text); }
+    .writer-chip.on {
+      background: var(--green-light);
+      border-color: var(--green);
+      color: var(--green-dark);
+      font-weight: 500;
+    }
+    .chip-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--border-strong);
+      transition: background 0.15s;
+    }
+    .writer-chip.on .chip-dot { background: var(--green); }
+
+    .clear-btn {
+      font-size: 12px; padding: 4px 10px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: transparent;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      color: var(--text-2);
+    }
+    .clear-btn:hover { background: var(--bg); }
+
+    /* ── Stats row ── */
+    .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .stat-card {
+      background: var(--bg);
+      border-radius: var(--radius-sm);
+      padding: 14px 16px;
+      text-align: center;
+    }
+    .stat-n { font-size: 28px; font-weight: 600; color: var(--text); }
+    .stat-lbl { font-size: 11px; color: var(--text-3); margin-top: 2px; }
+
+    /* ── Form ── */
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+    .form-grid.full { grid-template-columns: 1fr; }
+    .field label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-2);
+      margin-bottom: 5px;
+      letter-spacing: 0.02em;
+    }
+    .field input, .field select {
+      width: 100%;
+      padding: 9px 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      transition: border-color 0.15s;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+    .field select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239E9B95' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      padding-right: 28px;
+      cursor: pointer;
+    }
+    .field input:focus, .field select:focus {
+      outline: none;
+      border-color: var(--green);
+      box-shadow: 0 0 0 3px var(--green-light);
+    }
+    .field input::placeholder { color: var(--text-3); }
+
+    .assign-preview {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 14px;
+      background: var(--green-light);
+      border-radius: var(--radius-sm);
+      margin-bottom: 14px;
+      font-size: 13px;
+      color: var(--green-dark);
+    }
+    .assign-preview strong { font-weight: 600; }
+    .assign-preview .tasks-cnt { margin-left: auto; color: var(--green); font-size: 12px; }
+    .assign-preview.warn { background: var(--amber-light); color: var(--amber-dark); }
+
+    .submit-btn {
+      width: 100%; padding: 11px;
+      background: var(--green);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+      letter-spacing: 0.01em;
+    }
+    .submit-btn:hover { background: var(--green-dark); }
+    .submit-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    /* ── Task queue ── */
+    .task-list { display: flex; flex-direction: column; gap: 8px; }
+    .task-row {
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 14px;
+      background: var(--bg);
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+    }
+    .task-num { font-size: 11px; color: var(--text-3); font-variant-numeric: tabular-nums; min-width: 20px; }
+    .task-topic { font-weight: 500; font-size: 13px; flex: 1; }
+    .badge {
+      padding: 3px 9px; border-radius: 20px;
+      font-size: 11px; font-weight: 600;
+      white-space: nowrap;
+    }
+    .b-type { background: var(--blue-light); color: var(--blue-dark); }
+    .b-cat { background: var(--purple-light); color: var(--purple-dark); }
+    .b-writer { background: var(--green-light); color: var(--green-dark); }
+    .b-sent { background: #EAF3DE; color: #27500A; }
+    .b-local { background: var(--amber-light); color: var(--amber-dark); }
+    .b-fail { background: #FCEBEB; color: #791F1F; }
+
+    .empty-state {
+      padding: 3rem; text-align: center;
+      color: var(--text-3); font-size: 13px;
+    }
+    .empty-icon { font-size: 32px; margin-bottom: 8px; }
+
+    /* ── Setup ── */
+    .setup-steps { display: flex; flex-direction: column; gap: 10px; margin-bottom: 1.25rem; }
+    .step {
+      display: flex; align-items: flex-start; gap: 12px;
+      padding: 12px;
+      background: var(--bg);
+      border-radius: var(--radius-sm);
+    }
+    .step-n {
+      width: 24px; height: 24px; border-radius: 50%;
+      background: var(--text);
+      color: #fff;
+      font-size: 11px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-top: 1px;
+    }
+    .step-text { font-size: 13px; color: var(--text-2); }
+    .step-text strong { color: var(--text); }
+
+    .code-block {
+      background: #1A1917;
+      border-radius: var(--radius-sm);
+      padding: 14px;
+      font-family: 'DM Mono', monospace;
+      font-size: 11.5px;
+      color: #C8C5BC;
+      white-space: pre-wrap;
+      line-height: 1.7;
+      max-height: 240px;
+      overflow-y: auto;
+      margin-bottom: 8px;
+    }
+    .code-block .kw { color: #7F77DD; }
+    .code-block .str { color: #5DCAA5; }
+    .code-block .fn { color: #EF9F27; }
+    .code-btn {
+      padding: 6px 14px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: var(--surface);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12px; font-weight: 500;
+      cursor: pointer; color: var(--text-2);
+    }
+    .code-btn:hover { background: var(--bg); }
+    .code-btn.copied { background: var(--green-light); color: var(--green-dark); border-color: var(--green); }
+
+    /* ── Toast ── */
+    #toast {
+      position: fixed; bottom: 1.5rem; left: 50%;
+      transform: translateX(-50%) translateY(10px);
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 13px; font-weight: 500;
+      opacity: 0; pointer-events: none;
+      transition: all 0.2s;
+      z-index: 999;
+      font-family: 'DM Sans', sans-serif;
+    }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    #toast.success { background: #1A1917; color: #fff; }
+    #toast.error { background: var(--red); color: #fff; }
+
+    @media (max-width: 600px) {
+      .topbar { padding: 0 1rem; }
+      .main { padding: 1rem; }
+      .form-grid { grid-template-columns: 1fr; }
+      .stats-row { grid-template-columns: 1fr; }
+      .task-row { flex-wrap: wrap; }
+      .tabs { width: 100%; }
+      .tab { flex: 1; text-align: center; padding: 7px 8px; font-size: 12px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-logo">
+    <div class="logo-dot"></div>
+    <span class="topbar-title">SEO Task Assigner</span>
+  </div>
+  <span class="topbar-sub">CM JFM AMJ 2026</span>
+  <div class="topbar-right">
+    <div class="avail-pill">
+      <span id="avail-n">0</span> writers available today
+    </div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="tabs">
+    <button class="tab active" onclick="go('availability')">Daily Availability</button>
+    <button class="tab" onclick="go('add')">Add Task</button>
+    <button class="tab" id="tab-queue" onclick="go('queue')">Queue</button>
+    <button class="tab" onclick="go('setup')">Sheet Setup</button>
+  </div>
+
+  <!-- ═══ AVAILABILITY ═══ -->
+  <div id="panel-availability" class="panel active">
+    <div class="card">
+      <div class="card-title">
+        Select today's available writers
+        <button class="clear-btn" onclick="clearAll()">Clear all</button>
+      </div>
+      <div class="team-section">
+        <div class="team-label">Team A</div>
+        <div class="writer-grid" id="gridA"></div>
+      </div>
+      <div class="team-section">
+        <div class="team-label">Team B</div>
+        <div class="writer-grid" id="gridB"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Today's summary</div>
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-n" id="s-avail">0</div><div class="stat-lbl">Available writers</div></div>
+        <div class="stat-card"><div class="stat-n" id="s-tasks">0</div><div class="stat-lbl">Tasks added</div></div>
+        <div class="stat-card"><div class="stat-n" id="s-sent">0</div><div class="stat-lbl">Sent to sheet</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ ADD TASK ═══ -->
+  <div id="panel-add" class="panel">
+    <div class="card">
+      <div class="card-title">New task</div>
+      <div class="form-grid full" style="margin-bottom:12px">
+        <div class="field">
+          <label>Topic *</label>
+          <input id="f-topic" type="text" placeholder="e.g. SSC CGL Final Result 2026" />
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="field">
+          <label>Update Type</label>
+          <select id="f-type">
+            <option>LMS update</option>
+            <option>Blog</option>
+            <option>Blog Update</option>
+            <option>News</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Category</label>
+          <select id="f-cat">
+            <option>State Exams</option>
+            <option>Teaching</option>
+            <option>Banking</option>
+            <option>Engineering</option>
+            <option>State PSC</option>
+            <option>Defence</option>
+            <option>Railways</option>
+            <option>SSC</option>
+            <option>UPSC</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-grid full" style="margin-bottom:14px">
+        <div class="field">
+          <label>Live URL <span style="font-weight:400;color:var(--text-3)">(optional)</span></label>
+          <input id="f-url" type="text" placeholder="https://testbook.com/..." />
+        </div>
+      </div>
+      <div class="assign-preview" id="assign-preview">
+        <div class="chip-dot" style="background:var(--green);width:8px;height:8px;flex-shrink:0"></div>
+        <span>Will be assigned to: <strong id="preview-name">—</strong></span>
+        <span class="tasks-cnt" id="preview-cnt"></span>
+      </div>
+      <button class="submit-btn" onclick="submitTask()">Add Task → Send to Sheet</button>
+    </div>
+  </div>
+
+  <!-- ═══ QUEUE ═══ -->
+  <div id="panel-queue" class="panel">
+    <div class="card">
+      <div class="card-title">
+        Today's task queue
+        <span id="queue-date" style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-3);font-size:12px"></span>
+      </div>
+      <div class="task-list" id="task-list">
+        <div class="empty-state">
+          <div class="empty-icon">📋</div>
+          No tasks added yet
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SETUP ═══ -->
+  <div id="panel-setup" class="panel">
+    <div class="card">
+      <div class="card-title">Apps Script Web App URL</div>
+      <div class="field" style="margin-bottom:8px">
+        <input id="script-url" type="text" placeholder="https://script.google.com/macros/s/.../exec" oninput="saveUrl()" />
+      </div>
+      <p style="font-size:12px;color:var(--text-3)">Paste the URL here after deploying the Apps Script below. All tasks will auto-sync to your Google Sheet.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">One-time Google Sheet setup</div>
+      <div class="setup-steps">
+        <div class="step"><div class="step-n">1</div><div class="step-text">Open your Google Sheet → <strong>Extensions → Apps Script</strong></div></div>
+        <div class="step"><div class="step-n">2</div><div class="step-text">Delete all existing code and <strong>paste the code below</strong></div></div>
+        <div class="step"><div class="step-n">3</div><div class="step-text"><strong>Deploy → New Deployment → Web App</strong> → Type: Web app</div></div>
+        <div class="step"><div class="step-n">4</div><div class="step-text">Set "Who has access" to <strong>Anyone</strong> → click Deploy</div></div>
+        <div class="step"><div class="step-n">5</div><div class="step-text">Copy the Web App URL and paste it above</div></div>
+      </div>
+
+      <div style="font-size:11px;font-weight:600;color:var(--text-3);letter-spacing:0.05em;text-transform:uppercase;margin-bottom:8px">Apps Script code</div>
+      <div class="code-block" id="code-display"></div>
+      <button class="code-btn" id="copy-btn" onclick="copyCode()">Copy code</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const TEAM_A = ['Shilpa Singh','Archita','Shilpa Kohli','Nadeem','Jyotishman','Trishala','Atul'];
+const TEAM_B = ['Aditi Pandey','Mohit','Shivangi','Archana','Shemaila','Soumya','Vaishnavi'];
+
+let available = [];
+let tasks = [];
+let rrIdx = 0;
+let scriptUrl = localStorage.getItem('seo_script_url') || '';
+
+const SCRIPT = `function doPost(e) {
+  try {
+    var data = JSON.parse(e.postData.contents);
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+    var tz = Session.getScriptTimeZone();
+    var dateStr = Utilities.formatDate(new Date(), tz, "MM/dd/yyyy");
+    sheet.appendRow([
+      dateStr,
+      data.topic    || '',
+      data.updateType || '',
+      data.category || '',
+      data.owner    || '',
+      data.url      || '',
+      '',
+      data.status   || '',
+      ''
+    ]);
+    return ContentService
+      .createTextOutput(JSON.stringify({ success: true }))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch(err) {
+    return ContentService
+      .createTextOutput(JSON.stringify({ success: false, error: err.message }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+function doGet(e) {
+  return ContentService.createTextOutput('SEO Task Assigner — live!');
+}`;
+
+document.getElementById('code-display').textContent = SCRIPT;
+if (scriptUrl) document.getElementById('script-url').value = scriptUrl;
+
+function buildChip(name, team) {
+  const c = document.createElement('div');
+  c.className = 'writer-chip' + (available.includes(name) ? ' on' : '');
+  c.innerHTML = `<div class="chip-dot"></div><span>${name}</span>`;
+  c.onclick = () => toggle(name, c);
+  return c;
+}
+
+function toggle(name, chip) {
+  if (available.includes(name)) {
+    available = available.filter(n => n !== name);
+    chip.classList.remove('on');
+  } else {
+    available.push(name);
+    chip.classList.add('on');
+  }
+  sync();
+}
+
+function clearAll() {
+  available = [];
+  document.querySelectorAll('.writer-chip').forEach(c => c.classList.remove('on'));
+  sync();
+}
+
+function sync() {
+  document.getElementById('avail-n').textContent = available.length;
+  document.getElementById('s-avail').textContent = available.length;
+  document.getElementById('s-tasks').textContent = tasks.length;
+  document.getElementById('s-sent').textContent = tasks.filter(t => t.status === 'sent').length;
+  const qBadge = tasks.length ? `<span class="badge b-writer" style="font-size:10px">${tasks.length}</span>` : '';
+  document.getElementById('tab-queue').innerHTML = `Queue ${qBadge}`;
+  updatePreview();
+}
+
+function nextWriter() {
+  if (!available.length) return null;
+  const w = available[rrIdx % available.length];
+  return w;
+}
+
+function updatePreview() {
+  const w = nextWriter();
+  const prev = document.getElementById('assign-preview');
+  if (!w) {
+    prev.className = 'assign-preview warn';
+    document.getElementById('preview-name').textContent = 'No writers selected';
+    document.getElementById('preview-cnt').textContent = '';
+  } else {
+    prev.className = 'assign-preview';
+    document.getElementById('preview-name').textContent = w;
+    const cnt = tasks.filter(t => t.writer === w).length;
+    document.getElementById('preview-cnt').textContent = `${cnt} task${cnt !== 1 ? 's' : ''} today`;
+  }
+}
+
+async function submitTask() {
+  const topic = document.getElementById('f-topic').value.trim();
+  if (!topic) { toast('Please enter a topic', 'error'); return; }
+  if (!available.length) { toast('Select available writers first!', 'error'); return; }
+
+  const writer = available[rrIdx % available.length];
+  rrIdx++;
+
+  const task = {
+    id: Date.now(),
+    topic,
+    updateType: document.getElementById('f-type').value,
+    category: document.getElementById('f-cat').value,
+    url: document.getElementById('f-url').value.trim(),
+    owner: writer,
+    writer,
+    date: new Date().toLocaleDateString('en-IN'),
+    status: 'local'
+  };
+
+  tasks.push(task);
+  document.getElementById('f-topic').value = '';
+  document.getElementById('f-url').value = '';
+
+  const url = scriptUrl.trim();
+  if (url) {
+    task.status = 'sending';
+    toast(`Sending to sheet…`, 'success');
+    try {
+      await fetch(url, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(task)
+      });
+      task.status = 'sent';
+      toast(`✓ Assigned to ${writer} — added to sheet!`, 'success');
+    } catch (e) {
+      task.status = 'failed';
+      toast('Sheet sync failed — saved locally', 'error');
+    }
+  } else {
+    toast(`Assigned to ${writer} — add Sheet URL in Setup to sync`, 'success');
+  }
+
+  sync();
+  renderQueue();
+}
+
+function renderQueue() {
+  document.getElementById('queue-date').textContent = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
+  const list = document.getElementById('task-list');
+  if (!tasks.length) {
+    list.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div>No tasks added yet</div>';
+    return;
+  }
+  list.innerHTML = tasks.map((t, i) => {
+    const sb = t.status === 'sent' ? '<span class="badge b-sent">✓ Synced</span>'
+             : t.status === 'failed' ? '<span class="badge b-fail">Sync failed</span>'
+             : t.status === 'sending' ? '<span class="badge b-local">Sending…</span>'
+             : '<span class="badge b-local">Local only</span>';
+    return `
+      <div class="task-row">
+        <span class="task-num">${String(i + 1).padStart(2, '0')}</span>
+        <span class="task-topic">${t.topic}</span>
+        <span class="badge b-type">${t.updateType}</span>
+        <span class="badge b-cat">${t.category}</span>
+        <span class="badge b-writer">${t.writer}</span>
+        ${sb}
+      </div>`;
+  }).join('');
+}
+
+function go(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  const tabs = ['availability', 'add', 'queue', 'setup'];
+  document.querySelectorAll('.tab')[tabs.indexOf(tab)].classList.add('active');
+  document.getElementById('panel-' + tab).classList.add('active');
+  if (tab === 'queue') renderQueue();
+  if (tab === 'add') updatePreview();
+}
+
+function saveUrl() {
+  scriptUrl = document.getElementById('script-url').value.trim();
+  localStorage.setItem('seo_script_url', scriptUrl);
+}
+
+function copyCode() {
+  navigator.clipboard.writeText(SCRIPT).then(() => {
+    const btn = document.getElementById('copy-btn');
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy code'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+let toastTimer;
+function toast(msg, type) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = `show ${type}`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.className = '', 3000);
+}
+
+// Init
+(function() {
+  TEAM_A.forEach(n => document.getElementById('gridA').appendChild(buildChip(n)));
+  TEAM_B.forEach(n => document.getElementById('gridB').appendChild(buildChip(n)));
+  sync();
+  renderQueue();
+})();
+</script>
+</body>
+</html>
